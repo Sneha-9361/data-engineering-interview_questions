@@ -27,3 +27,18 @@
    * %python — Switches the cell context back to Python.
    * %fs — Allows you to interact with the Databricks File System (DBFS) using shell-like commands (e.g., %fs ls /databricks-datasets).
 Data Engineer Practice
+
+
+6.What is ETL?
+Answer:
+ETL stands for Extract, Transform, Load.
+Extract: Collect data from sources such as databases, files, or APIs.
+Transform: Clean, filter, and modify the data.
+Load: Store the processed data in the target system. 
+Example: Extract customer data from a database, remove duplicate records, and load the cleaned data into a data warehouse.
+
+
+7. What is the difference between ETL and ELT?
+Answer:
+ETL transforms data before loading it into the target system. ELT loads the data first and transforms it within the target system.
+ETLELTExtract, Transform, LoadExtract, Load, TransformTransformation occurs before loading.Transformation occurs after loading.Often uses a separate transformation engine.Often uses the processing capabilities of the target platform.Example: Traditional ETL tools.Example: Loading data into a lakehouse and transforming it with Databricks. 
