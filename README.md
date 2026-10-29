@@ -63,5 +63,19 @@
 
 12. What is the difference between `cache()` / `persist()` and `checkpoint()` in Spark?
 - Answer:
-  - **`cache()` / `persist()`:** Stores a DataFrame in memory/disk lazily but *retains the lineage graph*, meaning it recomputes data from source if an executor fails.
-  - **`checkpoint()`:** Cuts off the lineage graph entirely by writing the DataFrame out to reliable cloud storage, preventing stack overflows during massive iterative graph or machine learning training loops.
+  - `cache()` / `persist()`:Stores a DataFrame in memory/disk lazily but *retains the lineage graph*, meaning it recomputes data from source if an executor fails.
+  - `checkpoint()`:Cuts off the lineage graph entirely by writing the DataFrame out to reliable cloud storage, preventing stack overflows during massive iterative graph or machine learning training loops.
+
+
+13. What is a Databricks notebook?
+Answer: A Databricks notebook is a place where we write and run code to process and analyze data. It supports languages like Python, SQL, Scala, and R.
+
+Example: We can use a notebook to clean duplicate records using PySpark.
+14. What is PySpark?
+Answer: PySpark is the Python API for Apache Spark. It helps us process large amounts of data across multiple computers using Python.
+
+Example: We can use PySpark to remove duplicate records, handle missing values, and transform data.
+15. What is a DataFrame in PySpark?
+Answer: A DataFrame is a collection of data organized into rows and columns, similar to a table in a database.
+
+Example: A DataFrame containing call records might have columns such as call_id, agent_name, and call_duration.
