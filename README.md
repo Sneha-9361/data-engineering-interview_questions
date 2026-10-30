@@ -79,3 +79,36 @@ Example: We can use PySpark to remove duplicate records, handle missing values, 
 Answer: A DataFrame is a collection of data organized into rows and columns, similar to a table in a database.
 
 Example: A DataFrame containing call records might have columns such as call_id, agent_name, and call_duration.
+
+
+16. What is the difference between a Transformation and an Action in Spark?
+
+Answer: In PySpark, transformations modify or process data to create a new DataFrame, while actions trigger execution and return results or write data to storage.
+
+- Transformations: filter(), select(), join(), groupBy()
+- Actions: show(), count(), collect(), write()
+
+Example: We can use filter() to select records with call durations greater than 100 seconds and count() to find the number of matching records.
+
+17. What is Lazy Evaluation in Spark?
+
+Answer: Lazy evaluation means Spark does not execute transformations immediately. It waits until an action is called to execute the required operations.
+
+Example: If we use filter() and select() on a DataFrame, Spark records these transformations but does not execute them immediately. When we call show(), Spark executes the necessary operations.
+
+Benefit: Lazy evaluation helps Spark optimize the execution plan and improve performance.
+
+18. How do you handle duplicate records in PySpark?
+
+Answer: We can use dropDuplicates() or distinct() to remove duplicate records from a DataFrame.
+
+- dropDuplicates(): Removes duplicate rows, or duplicates based on specified columns.
+- distinct(): Removes completely duplicate rows across all columns.
+
+Example:
+
+df_cleaned = df.dropDuplicates(["call_id"])
+
+This removes duplicate records based on the call_id column.
+
+Real-time example: In my data engineering work, removing duplicate call records can help maintain data quality and prevent inaccurate reporting in dashboards.
