@@ -112,3 +112,55 @@ df_cleaned = df.dropDuplicates(["call_id"])
 This removes duplicate records based on the call_id column.
 
 Real-time example: In my data engineering work, removing duplicate call records can help maintain data quality and prevent inaccurate reporting in dashboards.
+
+19. What is the difference between repartition() and coalesce() in PySpark?
+
+Answer: Both are used to change the number of partitions in a DataFrame.
+
+- repartition(): Increases or decreases the number of partitions. It performs a full shuffle of data across partitions.
+- coalesce(): Mainly reduces the number of partitions without performing a full shuffle, making it more efficient.
+
+Example:
+
+df_repartitioned = df.repartition(10)
+
+df_coalesced = df.coalesce(2)
+
+Real-time example: If a DataFrame has 10 partitions and we want to reduce it to 2 before writing the output, we can use coalesce(2) to reduce unnecessary data movement.
+
+
+20. What is the difference between INNER JOIN, LEFT JOIN, and RIGHT JOIN in PySpark?
+
+Answer: Joins are used to combine data from two DataFrames based on a common column.
+
+- INNER JOIN: Returns only matching records from both DataFrames.
+- LEFT JOIN: Returns all records from the left DataFrame and matching records from the right DataFrame. Non-matching right-side values will be NULL.
+- RIGHT JOIN: Returns all records from the right DataFrame and matching records from the left DataFrame. Non-matching left-side values will be NULL.
+
+Example:
+
+df_result = df_calls.join(
+    df_agents,
+    "agent_id",
+    "inner"
+)
+
+Real-time example: We can join call records with agent details using agent_id to generate reporting datasets for dashboards.
+
+
+21. What is the difference between groupBy() and orderBy() in PySpark?
+
+Answer: Both are used for different data-processing purposes.
+
+- groupBy(): Groups records based on one or more columns and is commonly used with aggregate functions such as count(), sum(), and avg().
+- orderBy(): Sorts records based on one or more columns in ascending or descending order.
+
+Example:
+
+# Group calls by agent
+df_grouped = df.groupBy("agent_id").count()
+
+# Sort calls by duration
+df_sorted = df.orderBy("call_duration", ascending=False)
+
+Real-time example: We can use groupBy() to calculate the total number of calls handled by each agent and orderBy() to identify agents with the highest call volumes.
