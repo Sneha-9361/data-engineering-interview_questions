@@ -164,3 +164,44 @@ df_grouped = df.groupBy("agent_id").count()
 df_sorted = df.orderBy("call_duration", ascending=False)
 
 Real-time example: We can use groupBy() to calculate the total number of calls handled by each agent and orderBy() to identify agents with the highest call volumes.
+
+22. What is a Broadcast Join in PySpark, and when should you use it?
+Answer: A Broadcast Join is an optimization technique where Spark sends a copy of a small DataFrame to all executor nodes instead of shuffling data across the network.
+ * How it works: In a regular join, both datasets are shuffled across the cluster to match keys. In a broadcast join, the small table fits into memory on each worker node, eliminating the expensive shuffle stage entirely.
+ * When to use: When joining a large dataset with a small lookup or dimension table (by default, tables under 10 MB, though this threshold can be tuned).
+Example:
+from pyspark.sql.functions import broadcast
+
+# Join large call records with a small agent lookup table
+df_joined = df_calls.join(broadcast(df_agents), "agent_id", "inner")
+
+Real-world scenario: When joining hundreds of thousands of customer support records with a small reference table containing 20 support agent profiles, broadcasting the agent table speeds up execution and avoids network bottlenecks.
+23. How do you handle missing (NULL) values in PySpark?
+Answer: Missing values can be handled using DataFrame methods like dropna() to filter them out or fillna() to replace them with default values.
+ * dropna(): Removes rows containing null or NaN values across all columns or specific subset columns.
+ * fillna(): Replaces null values with a specified default value (such as 0, "Unknown", or the column mean).
+Example:
+# Drop rows where critical identifier columns are missing
+df_cleaned = df.dropna(subset=["ticket_id", "customer_id"])
+
+# Replace missing resolution times or text fields with defaults
+df_filled = df.fillna({"resolution_time": 0, "issue_category": "Unassigned"})
+
+Real-world scenario: In customer ticket data, tickets without a valid ticket_id are invalid and should be dropped, while unassigned tickets can have their status filled with "Unassigned" to prevent null errors in dashboard visual breakdowns.
+24. What are Window Functions in PySpark, and how are they used?
+Answer: Window functions calculate results (such as rankings, running totals, or moving averages) across a specified group of rows related to the current row, without collapsing the individual rows like groupBy() does.
+ * Key Components:
+   * partitionBy(): Defines the group of rows (the window).
+   * orderBy(): Determines the sequence of rows inside the window.
+ * Common Functions: row_number(), rank(), dense_rank(), lead(), lag().
+Example:
+from pyspark.sql.functions import desc, row_number
+from pyspark.sql.window import Window
+
+# Rank calls per agent based on duration
+window_spec = Window.partitionBy("agent_id").orderBy(desc("call_duration"))
+
+df_ranked = df.withColumn("rank", row_number().over(window_spec))
+
+Real-world scenario: If an agent has handled multiple calls, a window function lets you easily flag their longest call or pick the latest updated status for each support ticket without losing row-level details.
+
