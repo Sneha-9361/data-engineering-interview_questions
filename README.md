@@ -204,4 +204,78 @@ window_spec = Window.partitionBy("agent_id").orderBy(desc("call_duration"))
 df_ranked = df.withColumn("rank", row_number().over(window_spec))
 
 Real-world scenario: If an agent has handled multiple calls, a window function lets you easily flag their longest call or pick the latest updated status for each support ticket without losing row-level details.
+### Databricks & PySpark Interview Preparation – Next 3 Questions
+
+25. What is the difference between `collect()` and `show()` in PySpark?
+
+Answer:
+
+* collect(): Retrieves all records from a DataFrame and brings them to the driver program as a list of Rows.
+
+* show(): Displays a limited number of records from a DataFrame in a tabular format.
+
+Example:
+
+```python
+# Retrieves all records to the driver
+data = df.collect()
+
+# Displays the first 20 records
+df.show()
+
+# Displays the first 5 records
+df.show(5)
+```
+
+Important: `collect()` can cause out-of-memory errors if the DataFrame is very large because it brings all records into driver memory.
+
+26. What is the difference between `select()` and `withColumn()` in PySpark?
+
+Answer:
+
+* select(): Used to select specific columns or create expressions from existing columns.
+
+* withColumn(): Used to add a new column or modify an existing column in a DataFrame.
+
+Example:
+
+```python
+# Select specific columns
+df_selected = df.select("call_id", "agent_id")
+
+# Add a new column
+df_updated = df.withColumn(
+    "call_duration_minutes",
+    df.call_duration / 60
+)
+```
+
+Real-time example: In call center datasets, we can use `select()` to retrieve required call details and `withColumn()` to calculate call duration in minutes.
+
+27. What is the difference between Narrow Transformation and Wide Transformation in Spark?
+
+Answer:
+
+* Narrow Transformation: Data processing happens without requiring data movement across different partitions. Each output partition depends on a limited number of input partitions.
+
+* Wide Transformation: Data processing requires data movement (shuffle) across multiple partitions to combine or reorganize data.
+
+Examples:
+
+| Narrow Transformations | Wide Transformations |
+| ---------------------- | -------------------- |
+| filter()               | groupBy()            |
+| select()               | distinct()           |
+| map()                  | orderBy()            |
+| flatMap()              | repartition()        |
+
+Real-time example:
+
+* Narrow: Filtering call records where call duration is greater than 100 seconds.
+
+* Wide: Grouping call records by agent ID to calculate the total number of calls handled by each agent.
+
+Interview tip: Narrow transformations are generally faster because they avoid shuffle operations, whereas wide transformations can be expensive because they involve data movement across partitions.
+
+We can continue with questions 28–30 in the same format, focusing on practical Databricks and PySpark interview concepts.
 
