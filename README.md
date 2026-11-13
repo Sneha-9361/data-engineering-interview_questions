@@ -1,281 +1,901 @@
-1. What is Databricks, and how does it differ from standard Apache Spark?
-- Answer: Databricks is a cloud-based unified data analytics platform built on top of Apache Spark. While Apache Spark is an open-source, distributed cluster-computing framework used for processing large datasets, Databricks is a fully managed platform that wraps around Spark.
-- Key Differences:
-  - Management: Databricks provides an out-of-the-box collaborative workspace, automated cluster management, and built-in security features, whereas standard Spark requires manual setup and infrastructure configuration.
-  - Optimizations: Databricks includes proprietary components like the Databricks Runtime (DBR) and the Photon engine (a vectorized query engine written in C++) which offer significantly faster performance than vanilla Spark.
+# Databricks and PySpark Interview Preparation
 
-2. What is Delta Lake, and why is it preferred over raw formats like Parquet?
-- Answer: Delta Lake is an open-source storage layer that brings reliability, security, and performance to data lakes. It sits on top of your existing cloud storage (like AWS S3, Azure Blob/ADLS Gen2, or Google Cloud Storage) as a collection of Parquet files.
-- Key Advantages over Parquet:
-  - ACID Transactions: Ensures data integrity so that reads and writes never result in corrupted or half-written data.
-  - Time Travel: Allows you to query, audit, or roll back to previous versions of data using timestamps or version numbers.
-  - Schema Enforcement & Evolution: Automatically rejects writes that don't match the table schema or safely allows structural changes (like adding new columns).
+Simple interview. Answers with practical examples for Data Engineering roles.
 
-3. What is the difference between an All-Purpose Cluster and a Job Cluster?
-- Answer: Databricks offers two types of compute clusters depending on your workload needs:
-  - All-Purpose (Interactive) Clusters: Used for interactive development, exploratory data analysis, and running collaborative notebooks. They stay running until manually terminated or timed out due to inactivity, and multiple users can share them.
-  - Job Clusters: Created automatically by the Databricks job scheduler to execute specific, automated background tasks (like an ETL pipeline). They spin up when the job starts and terminate automatically once the job finishes, making them cost-effective for production workloads.
+**Technologies:** Azure Databricks, Apache Spark, PySpark, Python, Delta Lake, SQL
 
-4. What is the Medallion Architecture in Databricks?
-- Answer: The Medallion Architecture is a design pattern used to logically organize data in a lakehouse, structuring it across three incremental quality layers:
-  - Bronze Layer (Raw): Ingests raw data directly from source systems (JSON, CSV, Kafka streams) in its native format, maintaining history and a replica of source data.
-  - Silver Layer (Cleaned & Conformed): Data is cleansed, filtered, deduplicated, and matched. Tables here provide an enterprise-view of cleaned data ready for ad-hoc analysis.
-  - Gold Layer (Aggregated / Business-Level): Highly refined and aggregated data structured specifically to drive business reporting, dashboards, machine learning, and downstream analytical applications.
+---
 
-5. What are "Magic Commands" in Databricks notebooks?
-- Answer: Magic commands are language-specific directives placed at the top of a notebook cell that allow you to override the default language of the notebook. Databricks notebooks support Python, SQL, Scala, and R.
-- Common Examples:
-  - %sql — Allows you to run SQL queries inside a Python notebook cell.
-  - %python — Switches the cell context back to Python.
-  - %fs — Allows you to interact with the Databricks File System (DBFS) using shell-like commands (e.g., %fs ls /databricks-datasets).
+## Table of Contents
 
-6. What is ETL and how does it differ from ELT?
-- Answer: ETL stands for Extract, Transform, Load, where transformation happens before data is loaded into the target warehouse. ELT stands for Extract, Load, Transform, where data is loaded into the target storage system first and transformed natively inside the platform.
-- Key Differences:
-  - Processing Engine: ETL uses a separate, external transformation engine, while ELT leverages the high-performance computing capabilities of modern target platforms (like cloud data warehouses or lakehouses).
-  - Use Case Example: Traditional ETL tools for legacy databases versus loading raw data directly into a Databricks lakehouse (Bronze) and transforming it using PySpark and Delta Lake (Silver/Gold).
+1.. Apache Spark
 
-7. What is Unity Catalog in Databricks, and why is it important?
-- Answer: Unity Catalog is a fine-grained governance solution for data and AI on the Databricks Lakehouse. It provides centralized access control, auditing, lineage, and discovery for all data assets across your cloud storage.
-- Why it matters:
-  - Centralized Security: Grants permissions down to the table, row, or column level using standard SQL (`GRANT` / `REVOKE`) across workspaces.
-  - Automatic Lineage: Automatically captures end-to-end data lineage across notebooks, workflows, and tables.
-  - Three-Level Namespace: Organizes data hierarchically using `catalog.schema.table`.
+2. Delta Lake
 
-8. How does Delta Lake handle concurrent writes, and what isolation levels does it support?
-- Answer: Delta Lake uses optimistic concurrency control (OCC). Before committing, it checks if any files read by the current transaction were modified by a concurrent transaction.
-- Isolation Levels:
-  - *Serializable* (default): Ensures complete isolation, preventing write conflicts or phantom reads.
-  - *WriteSerializable*: Allows concurrent writes as long as they don't logically conflict on the same partitions or data files.
+3. All-Purpose. Job Cluster
 
-9. What happens during a `VACUUM` command in Delta Lake, and what are the risks?
-- Answer: `VACUUM` removes obsolete Parquet data files that are no longer part of the current table state and are older than the retention threshold (default 7 days) to save storage costs.
-- Risks: Reducing the retention window too aggressively and running `VACUUM` permanently breaks **Time Travel** for snapshots older than that threshold and can cause active long-running concurrent jobs to fail if they reference just-deleted files.
+4. Medallion Architecture
 
-10. What is the difference between Partitioning and Z-Ordering?
-- Answer:
-  - **Partitioning:** Physically separates data into distinct directories based on low-cardinality columns (e.g., `date`, `country`). Best for broad, coarse-grained file filtering.
-  - **Z-Ordering:** Multi-dimensionally clusters data *within* files based on high-cardinality columns (e.g., `user_id`, `call_id`) using min/max file statistics to maximize data-skipping performance.
+5. Magic Commands
 
-11. What causes a Spark Shuffle, and how do you diagnose data skew?
-- Answer: A shuffle occurs when Spark redistributes data across different executor nodes because rows need to be grouped or joined together (`groupBy()`, `join()`, `distinct()`).
-- Diagnosing Data Skew: Look at the Spark UI task metrics for a stage where most tasks finish quickly while a single task takes significantly longer (long tail). Solutions include broadcast joins, salting keys, or custom partitioning.
+6.. Elt
 
-12. What is the difference between `cache()` / `persist()` and `checkpoint()` in Spark?
-- Answer:
-  - `cache()` / `persist()`:Stores a DataFrame in memory/disk lazily but *retains the lineage graph*, meaning it recomputes data from source if an executor fails.
-  - `checkpoint()`:Cuts off the lineage graph entirely by writing the DataFrame out to reliable cloud storage, preventing stack overflows during massive iterative graph or machine learning training loops.
+7. Unity Catalog
 
+8. Concurrent Writes in Delta Lake
 
-13. What is a Databricks notebook?
-Answer: A Databricks notebook is a place where we write and run code to process and analyze data. It supports languages like Python, SQL, Scala, and R.
+9. VACUUM Command
 
-Example: We can use a notebook to clean duplicate records using PySpark.
-14. What is PySpark?
-Answer: PySpark is the Python API for Apache Spark. It helps us process large amounts of data across multiple computers using Python.
+10.. Z-Ordering
 
-Example: We can use PySpark to remove duplicate records, handle missing values, and transform data.
-15. What is a DataFrame in PySpark?
-Answer: A DataFrame is a collection of data organized into rows and columns, similar to a table in a database.
+11. Spark. Data Skew
 
-Example: A DataFrame containing call records might have columns such as call_id, agent_name, and call_duration.
+12.. Persist and Checkpoint
 
+13. Databricks Notebook
 
-16. What is the difference between a Transformation and an Action in Spark?
+14. PySpark
 
-Answer: In PySpark, transformations modify or process data to create a new DataFrame, while actions trigger execution and return results or write data to storage.
+15. DataFrame
 
-- Transformations: filter(), select(), join(), groupBy()
-- Actions: show(), count(), collect(), write()
+16.. Action
 
-Example: We can use filter() to select records with call durations greater than 100 seconds and count() to find the number of matching records.
+17. Lazy Evaluation
 
-17. What is Lazy Evaluation in Spark?
+18. Handling Duplicate Records
 
-Answer: Lazy evaluation means Spark does not execute transformations immediately. It waits until an action is called to execute the required operations.
+19.. Coalesce
 
-Example: If we use filter() and select() on a DataFrame, Spark records these transformations but does not execute them immediately. When we call show(), Spark executes the necessary operations.
+20. Types of Joins
 
-Benefit: Lazy evaluation helps Spark optimize the execution plan and improve performance.
+21. GroupBy() and orderBy()
 
-18. How do you handle duplicate records in PySpark?
+22. Broadcast Join
 
-Answer: We can use dropDuplicates() or distinct() to remove duplicate records from a DataFrame.
+23. Handling NULL Values
 
-- dropDuplicates(): Removes duplicate rows, or duplicates based on specified columns.
-- distinct(): Removes completely duplicate rows across all columns.
+24. Window Functions
 
-Example:
+25. Collect() and show()
+
+26. Select() and withColumn()
+
+27. Narrow and Wide Transformations
+
+---
+
+# Part 1: Databricks Fundamentals
+
+## 1. What is Databricks. How does it differ from Apache Spark?
+
+**Definition:**
+
+Databricks is a cloud-based data analytics platform built around Apache Spark. It provides an environment to process amounts of data create pipelines and analyze data.
+
+Apache Spark is an open-source processing engine whereas Databricks provides a managed platform with features such as notebooks, cluster management, security and collaboration.
+
+**Key Differences:**
+
+- Apache Spark: Open-source data processing engine.
+
+- Databricks: Managed platform built around Spark.
+
+- Databricks provides built-in cluster management and collaboration tools.
+
+- Databricks Runtime and Photon can provide performance optimizations.
+
+**Example:**
+
+We can use Apache Spark to process datasets while Databricks provides a workspace where we can write PySpark code execute it and manage data pipelines.
+
+## 2. What is Delta Lake. Why is it preferred over Parquet?
+
+**Definition:**
+
+Delta Lake is a storage layer that adds reliability and additional features to data lakes. It uses Parquet files to store data and maintains a transaction log to track changes.
+
+**Key Advantages:**
+
+- **ACID Transactions:** Ensures data operations.
+
+- **Time Travel:** Allows us to access versions of data.
+
+- **Schema Enforcement:** Prevents data from being written with a schema.
+
+- **Schema Evolution:** Allows supported schema changes.
+
+- **MERGE:** Supports inserting, updating and handling records in a table.
+
+**Example:**
+
+Suppose we store customer call records in a Delta table. If incorrect data is inserted Time Travel can help us access a version of the table.
+
+## 3. What is the difference between All-Purpose Cluster and Job Cluster?
+
+**Definition:**
+
+A cluster is a group of computing resources used to execute data processing tasks in Databricks.
+
+**Types:**
+
+**All-Purpose Cluster:**
+
+- Used for development and interactive analysis.
+
+- Multiple users can work with it.
+
+- Usually remains available until terminated or automatically stopped.
+
+**Job Cluster:**
+
+- Created to execute jobs.
+
+- Used for scheduled ETL pipelines.
+
+- Automatically terminates after the job completes.
+
+**Example:**
+
+If I am developing and testing PySpark code I can use an All-Purpose Cluster. For an automated data pipeline I can use a Job Cluster.
+
+## 4. What is Medallion Architecture in Databricks?
+
+**Definition:**
+
+Medallion Architecture is a data organization approach that divides data into three layers: Bronze, Silver and Gold. Each layer improves the quality and usability of the data.
+
+**Three Layers:**
+
+1. **Bronze Layer (Raw Data):** Stores original data received from source systems.
+
+2. **Silver Layer (Cleaned Data):** Removes duplicates handles missing values and validates data.
+
+3. **Gold Layer (Business Data):** Contains. Business-ready data for reporting and dashboards.
+
+**Example:**
+
+Suppose a company receives customer support call records.
+
+- Bronze: Stores raw call records.
+
+- Silver: Removes records and handles missing values.
+
+- Gold: Calculates daily call volume and average call duration.
+
+## 5. What are Magic Commands in Databricks?
+
+**Definition:**
+
+Magic commands are commands used inside Databricks notebooks to execute different languages or perform specific operations.
+
+**Common Magic Commands:**
+
+| Command | Purpose |
+
+|---|---|
+
+%python` | Executes Python code |
+
+| `%sql` | Executes SQL queries |
+
+| `%scala` | Executes Scala code |
+
+| `%r` | Executes R code |
+
+| `%fs` | Performs file system operations |
+
+**Example:**
+
+```python
+
+%sql
+
+SELECT * FROM customer_calls;
+
+```
+
+This executes a SQL query inside a Databricks notebook.
+
+## 6. What is ETL. How is it different from ELT?
+
+**Definition:**
+
+ETL stands for Extract, Transform, Load. Data is extracted from a source, transformed and then loaded into the target system.
+
+ELT stands for Extract, Load, Transform. Data is extracted, loaded into the target system and transformed there.
+
+**Difference:**
+
+ETL | ELT |
+
+|---|---|
+
+| Transform before loading | Transform after loading |
+
+| Uses an external transformation process | Uses the target platform for transformation |
+
+Common in traditional data systems | Common in modern cloud platforms |
+
+**Example:**
+
+In an ETL process we clean customer data before loading it into the target database.
+
+In an ELT process we first load raw customer data into the Bronze layer. Then transform it using PySpark in Databricks.
+
+## 7. What is Unity Catalog in Databricks?
+
+**Definition:**
+
+Unity Catalog is a data governance solution in Databricks. It helps manage data access, permissions, security and data lineage.
+
+**Key Features:**
+
+- Centralized access control.
+
+- Data discovery.
+
+- Data lineage tracking.
+
+- Auditing.
+
+- Table and column-level permissions.
+
+**Three-Level Namespace:**
+
+```text
+
+```
+
+**Example:**
+
+Suppose a company has customer data and employee data. Using Unity Catalog administrators can control which users are allowed to access each table.
+
+---
+
+# Part 2: Delta Lake Concepts
+
+## 8. How does Delta Lake handle writes?
+
+**Definition:**
+
+Concurrent writes happen when multiple users or jobs try to modify the Delta table at the same time.
+
+Delta Lake uses Optimistic Concurrency Control (OCC) to detect conflicts before committing changes.
+
+**How it works:**
+
+1. A transaction reads the existing data.
+
+2. It performs the required changes.
+
+3. Before committing Delta Lake checks for changes.
+
+4. If a conflict is detected the transaction may. Need to be retried.
+
+**Isolation Levels:**
+
+- Serializable.
+
+- WriteSerializable.
+
+**Example:**
+
+Suppose two pipelines update the customer table simultaneously. Delta Lake checks whether their changes conflict before committing them.
+
+## 9. What happens during the VACUUM command?
+
+**Definition:**
+
+VACUUM is a Delta Lake command used to remove data files that are no longer required by the current table version.
+
+It helps reduce storage usage.
+
+**Example:**
+
+```sql
+
+VACUUM customer_calls;
+
+```
+
+**Important Point:**
+
+VACUUM can affect Time Travel because deleted files may be required to access versions of a table. Always consider the retention period before running it.
+
+## 10. What is the difference between Partitioning and Z-Ordering?
+
+**Definition:**
+
+Both are optimization techniques used to improve data retrieval performance in Delta tables.
+
+**Partitioning:**
+
+Divides data into storage partitions based on selected columns.
+
+Example: Partitioning call records based on year or date.
+
+**Z-Ordering:**
+
+Organizes data values together to improve data skipping and query performance.
+
+Example: Organizing call records based on `agent_id` or `call_id`.
+
+**Difference:**
+
+Partitioning | Z-Ordering |
+
+|---|---|
+
+| Divides data into partitions | Clusters data within files |
+
+Useful for filtering on partition columns | Useful for improving data skipping |
+
+| Often uses low-cardinality columns | Can help with frequently filtered columns |
+
+---
+
+# Part 3: Apache Spark Concepts
+
+## 11. What is Spark Shuffle. How do you identify Data Skew?
+
+**Definition:**
+
+Spark Shuffle is the process of moving data between partitions or executors during operations such as joins, groupBy and distinct.
+
+**Data Skew:**
+
+Data skew happens when data is distributed unevenly across partitions. Some tasks process data than others causing delays.
+
+**How to Identify:**
+
+We can check the Spark UI. Compare task execution times. If one task takes longer, than the others it may indicate data skew.
+
+**Solutions:**
+
+- Broadcast Join.
+
+- Salting keys.
+
+- Repartitioning data appropriately.
+
+**Example:**
+
+Suppose most customer calls go to one agent. When grouping records by agent ID one part may have more data than others.
+
+## 12. What is the difference between cache() persist() and checkpoint()?
+
+**Definition:**
+
+These methods are used to manage data that's in between and help Spark process data faster.
+
+**cache():**
+
+Stores a DataFrame so that it can be used again using the default storage level.
+
+**persist():**
+
+Stores a DataFrame using a storage level that is chosen by the user.
+
+**checkpoint():**
+
+Saves a DataFrame to a place and cuts off its previous history.
+
+**Example:**
+
+```python
+
+df.cache()
+
+df.persist()
+
+df.checkpoint()
+
+```
+
+**Difference:**
+
+- Cache and Persist help avoid doing the calculations over and over.
+
+- Checkpoint helps make long history chains shorter.
+
+---
+
+## 13. What is a Databricks Notebook?
+
+**Definition:**
+
+A Databricks notebook is a place where we can write, run and test code for working with data.
+
+It works with Python, SQL, Scala and R.
+
+**Example:**
+
+We can use a Databricks notebook to clean repeated customer records using PySpark.
+
+## 14. What is PySpark?
+
+**Definition:**
+
+PySpark is the Python way to use Apache Spark. It helps process data using Python across many computers.
+
+**Example:**
+
+We can use PySpark to get rid of repeated records handle missing information combine data sets and do data changes.
+
+```python
+
+df_cleaned = df.dropDuplicates()
+
+```
+
+## 15. What is a DataFrame in PySpark?
+
+**Definition:**
+
+A DataFrame is a set of data organized in rows and columns like a table in a database.
+
+**Example:**
+
+A customer call DataFrame might look like:
+
+| call_id | agent_name | call_duration |
+
+|---|---|---|
+
+| 101 | Arun | 120 |
+
+| 102 | Priya | 180 |
+
+103 | Kumar | 90 |
+
+```python
+
+df.show()
+
+```
+
+## 16. What is the difference between Transformation and Action in Spark?
+
+**Definition:**
+
+Transformations make a DataFrame by changing or working with existing data. Actions start the processing. Bring back results or write data.
+
+**Transformations:**
+
+- filter()
+
+- select()
+
+- join()
+
+- groupBy()
+
+**Actions:**
+
+- show()
+
+- count()
+
+- collect()
+
+- write()
+
+**Example:**
+
+```python
+
+# Transformation
+
+df_filtered = df.filter(df.call_duration > 100)
+
+# Action
+
+df_filtered.show()
+
+```
+
+Here filter() creates a DataFrame and show() starts the processing to show the results.
+
+## 17. What is Lazy Evaluation in Spark?
+
+**Definition:**
+
+Lazy Evaluation means Spark does not run transformations away. It waits until an action is used.
+
+**Example:**
+
+```python
+
+df_filtered = df.filter(df.call_duration > 100)
+
+df_filtered.show()
+
+```
+
+When we use filter() Spark makes a plan to run. When show() is called Spark runs the steps.
+
+**Benefit:**
+
+It helps Spark make the plan and avoid extra work.
+
+## 18. How do you deal with records in PySpark?
+
+**Definition:**
+
+Duplicate records are the records in a dataset. We can get rid of them using dropDuplicates() or distinct().
+
+**Methods:**
+
+- dropDuplicates(): Removes duplicates based on all columns or specific columns.
+
+- distinct(): Removes rows that're completely the same across all columns.
+
+**Example:**
+
+```python
 
 df_cleaned = df.dropDuplicates(["call_id"])
 
-This removes duplicate records based on the call_id column.
+```
 
-Real-time example: In my data engineering work, removing duplicate call records can help maintain data quality and prevent inaccurate reporting in dashboards.
+This keeps one record for each call_id.
 
-19. What is the difference between repartition() and coalesce() in PySpark?
+**Real-Life Example:**
 
-Answer: Both are used to change the number of partitions in a DataFrame.
+In customer support data repeated call records can make the total count wrong. Affect reports. Removing duplicates helps keep reports
 
-- repartition(): Increases or decreases the number of partitions. It performs a full shuffle of data across partitions.
-- coalesce(): Mainly reduces the number of partitions without performing a full shuffle, making it more efficient.
+## 19. What is the difference between repartition() and coalesce()?
 
-Example:
+**Definition:**
+
+Both methods are used to change the number of partitions in a DataFrame.
+
+**repartition():**
+
+- Can. Decrease partitions.
+
+- Does a shuffle.
+
+- Moves data across partitions.
+
+**coalesce():**
+
+- Usually reduces the number of partitions.
+
+- Usually avoids a shuffle.
+
+- Helps save data movement.
+
+**Example:**
+
+```python
+
+# Increase the number of partitions
 
 df_repartitioned = df.repartition(10)
 
+# Reduce the number of partitions
+
 df_coalesced = df.coalesce(2)
 
-Real-time example: If a DataFrame has 10 partitions and we want to reduce it to 2 before writing the output, we can use coalesce(2) to reduce unnecessary data movement.
+```
 
+**Real-Life Example:**
 
-20. What is the difference between INNER JOIN, LEFT JOIN, and RIGHT JOIN in PySpark?
+If a DataFrame has 10 partitions and we want to reduce it to 2 before saving we can use coalesce(2).
 
-Answer: Joins are used to combine data from two DataFrames based on a common column.
+## 20. What is the difference between INNER JOIN, LEFT JOIN and RIGHT JOIN?
 
-- INNER JOIN: Returns only matching records from both DataFrames.
-- LEFT JOIN: Returns all records from the left DataFrame and matching records from the right DataFrame. Non-matching right-side values will be NULL.
-- RIGHT JOIN: Returns all records from the right DataFrame and matching records from the left DataFrame. Non-matching left-side values will be NULL.
+**Definition:**
 
-Example:
+Joins are used to put two DataFrames based on a shared column.
+
+**Types:**
+
+- JOIN: Shows only the matching records from both DataFrames.
+
+- LEFT JOIN: Shows all records from the left DataFrame and matches from the right.
+
+- RIGHT JOIN: Shows all records from the right DataFrame and matches from the left.
+
+**Example:**
+
+```python
 
 df_result = df_calls.join(
-    df_agents,
-    "agent_id",
-    "inner"
+
+df_agents,
+
+"agent_id"
+
+"
+
 )
 
-Real-time example: We can join call records with agent details using agent_id to generate reporting datasets for dashboards.
+```
 
+**Real-Life Example:**
 
-21. What is the difference between groupBy() and orderBy() in PySpark?
+We can join call records with agent details using agent_id to make reports.
 
-Answer: Both are used for different data-processing purposes.
+## 21. What is the difference between groupBy() and orderBy()?
 
-- groupBy(): Groups records based on one or more columns and is commonly used with aggregate functions such as count(), sum(), and avg().
-- orderBy(): Sorts records based on one or more columns in ascending or descending order.
+**Definition:**
 
-Example:
+groupBy() groups records based on one or more columns whereas orderBy() sorts records.
+
+**groupBy():**
+
+Used with functions like count() sum() and avg().
+
+**orderBy():**
+
+Used to sort records in ascending or descending order.
+
+**Example:**
+
+```python
 
 # Group calls by agent
+
 df_grouped = df.groupBy("agent_id").count()
 
 # Sort calls by duration
-df_sorted = df.orderBy("call_duration", ascending=False)
 
-Real-time example: We can use groupBy() to calculate the total number of calls handled by each agent and orderBy() to identify agents with the highest call volumes.
+df_sorted = df.orderBy(
 
-22. What is a Broadcast Join in PySpark, and when should you use it?
-Answer: A Broadcast Join is an optimization technique where Spark sends a copy of a small DataFrame to all executor nodes instead of shuffling data across the network.
- * How it works: In a regular join, both datasets are shuffled across the cluster to match keys. In a broadcast join, the small table fits into memory on each worker node, eliminating the expensive shuffle stage entirely.
- * When to use: When joining a large dataset with a small lookup or dimension table (by default, tables under 10 MB, though this threshold can be tuned).
-Example:
+"call_duration"
+
+ascending=False
+
+)
+
+```
+
+**Real-Life Example:**
+
+We can use groupBy() to find how calls each agent handled and orderBy() to find the agents with the most calls.
+
+## 22. What is a Broadcast Join in PySpark?
+
+**Definition:**
+
+A Broadcast Join is a way to make things faster where Spark sends a DataFrame to all worker nodes instead of moving both data sets across the cluster.
+
+**When to Use:**
+
+When joining a DataFrame with a small one that fits in memory.
+
+**Example:**
+
+```python
+
 from pyspark.sql.functions import broadcast
 
-# Join large call records with a small agent lookup table
-df_joined = df_calls.join(broadcast(df_agents), "agent_id", "inner")
+df_joined = df_calls.join(
 
-Real-world scenario: When joining hundreds of thousands of customer support records with a small reference table containing 20 support agent profiles, broadcasting the agent table speeds up execution and avoids network bottlenecks.
-23. How do you handle missing (NULL) values in PySpark?
-Answer: Missing values can be handled using DataFrame methods like dropna() to filter them out or fillna() to replace them with default values.
- * dropna(): Removes rows containing null or NaN values across all columns or specific subset columns.
- * fillna(): Replaces null values with a specified default value (such as 0, "Unknown", or the column mean).
-Example:
-# Drop rows where critical identifier columns are missing
-df_cleaned = df.dropna(subset=["ticket_id", "customer_id"])
+broadcast(df_agents)
 
-# Replace missing resolution times or text fields with defaults
-df_filled = df.fillna({"resolution_time": 0, "issue_category": "Unassigned"})
+"agent_id"
 
-Real-world scenario: In customer ticket data, tickets without a valid ticket_id are invalid and should be dropped, while unassigned tickets can have their status filled with "Unassigned" to prevent null errors in dashboard visual breakdowns.
-24. What are Window Functions in PySpark, and how are they used?
-Answer: Window functions calculate results (such as rankings, running totals, or moving averages) across a specified group of rows related to the current row, without collapsing the individual rows like groupBy() does.
- * Key Components:
-   * partitionBy(): Defines the group of rows (the window).
-   * orderBy(): Determines the sequence of rows inside the window.
- * Common Functions: row_number(), rank(), dense_rank(), lead(), lag().
-Example:
-from pyspark.sql.functions import desc, row_number
+"
+
+)
+
+```
+
+**Real-Life Example:**
+
+Imagine we have thousands of call records and a small table with 20 agent details. We can send the agent table to all workers to speed up the join.
+
+## 23. How do you deal with values in PySpark?
+
+**Definition:**
+
+NULL values mean unknown data. PySpark has functions like dropna() and fillna() to handle them.
+
+**Methods:**
+
+- dropna(): Removes rows that have values.
+
+- fillna(): Replaces NULL values with a set value.
+
+**Example:**
+
+```python
+
+# Remove records without required IDs
+
+df_cleaned = df.dropna(
+
+subset=["ticket_id" "customer_id"]
+
+)
+
+# Replace missing values
+
+df_filled = df.fillna({
+
+"resolution_time": 0
+
+"issue_category": "
+
+})
+
+```
+
+**Real-Life Example:**
+
+If a customer support ticket has no ticket_id we may delete that record. If the issue category is missing we can set it to "Unassigned".
+
+## 24. What are Window Functions in PySpark?
+
+**Definition:**
+
+Window Functions do calculations across a group of rows without reducing the number of rows in the DataFrame.
+
+They are often used for ranking finding the records and calculating running totals.
+
+**Key Parts:**
+
+- partitionBy(): Divides rows into groups.
+
+- orderBy(): Sets the order of rows in each group.
+
+**Common Functions:**
+
+- row_number()
+
+- rank()
+
+- dense_rank()
+
+- lead()
+
+- lag()
+
+**Example:**
+
+```python
+
+from pyspark.sql.functions import (
+
+desc,
+
+row_number
+
+)
+
 from pyspark.sql.window import Window
 
-# Rank calls per agent based on duration
-window_spec = Window.partitionBy("agent_id").orderBy(desc("call_duration"))
+window_spec = Window.partitionBy(
 
-df_ranked = df.withColumn("rank", row_number().over(window_spec))
+"agent_id"
 
-Real-world scenario: If an agent has handled multiple calls, a window function lets you easily flag their longest call or pick the latest updated status for each support ticket without losing row-level details.
-### Databricks & PySpark Interview Preparation – Next 3 Questions
+).orderBy(desc("call_duration"))
 
-25. What is the difference between `collect()` and `show()` in PySpark?
+df_ranked = df.withColumn(
 
-Answer:
+"rank"
 
-* collect(): Retrieves all records from a DataFrame and brings them to the driver program as a list of Rows.
+row_number().over(window_spec)
 
-* show(): Displays a limited number of records from a DataFrame in a tabular format.
+)
 
-Example:
+```
+
+**Real-Life Example:**
+
+We can use Window Functions to find the call for each agent or get the latest status of each ticket.
+
+## 25. What is the difference between collect() and show()?
+
+**Definition:**
+
+Both are actions, in PySpark. They work differently.
+
+**collect():**
+
+Brings all the rows from a DataFrame to the driver program as a list of rows.
+
+**show():**
+
+Displays the few rows of a DataFrame.
+
+Displays a number of records in a table format.
+
+**Example:**
 
 ```python
-# Retrieves all records to the driver
+
+# Bring all records to the driver
+
 data = df.collect()
 
-# Displays the first 20 records
+# Display 20 records
+
 df.show()
 
-# Displays the first 5 records
+# Display first 5 records
+
 df.show(5)
+
 ```
 
-Important: `collect()` can cause out-of-memory errors if the DataFrame is very large because it brings all records into driver memory.
+**Important:**
 
-26. What is the difference between `select()` and `withColumn()` in PySpark?
+collect() can cause memory issues when used on very large datasets because it brings all records to the driver memory.
 
-Answer:
+## 26. What is the difference between select() and withColumn()?
 
-* select(): Used to select specific columns or create expressions from existing columns.
+**Definition:**
 
-* withColumn(): Used to add a new column or modify an existing column in a DataFrame.
+) is used to get specific columns or to create new column expressions. WithColumn() is used to add a column or to change an existing column.
 
-Example:
+**Example:**
 
 ```python
-# Select specific columns
-df_selected = df.select("call_id", "agent_id")
 
-# Add a new column
-df_updated = df.withColumn(
-    "call_duration_minutes",
-    df.call_duration / 60
+# Select specific columns
+
+df_selected = df.select(
+
+"call_id"
+
+"agent_id"
+
 )
+
+# Add a column
+
+df_updated = df.withColumn(
+
+"call_duration_minutes"
+
+df.call_duration / 60
+
+)
+
 ```
 
-Real-time example: In call center datasets, we can use `select()` to retrieve required call details and `withColumn()` to calculate call duration in minutes.
+**Real-Time Example:**
 
-27. What is the difference between Narrow Transformation and Wide Transformation in Spark?
+We can use select() to get the necessary call details and withColumn() to calculate call duration in minutes.
 
-Answer:
+## 27. What is the difference between Narrow and Wide Transformations?
 
-* Narrow Transformation: Data processing happens without requiring data movement across different partitions. Each output partition depends on a limited number of input partitions.
+**Definition:**
 
-* Wide Transformation: Data processing requires data movement (shuffle) across multiple partitions to combine or reorganize data.
+Narrow and Wide Transformations explain how Spark processes data across partitions.
 
-Examples:
+**Narrow Transformation:**
 
-| Narrow Transformations | Wide Transformations |
-| ---------------------- | -------------------- |
-| filter()               | groupBy()            |
-| select()               | distinct()           |
-| map()                  | orderBy()            |
-| flatMap()              | repartition()        |
+Data is processed without requiring a shuffle across partitions. Each output partition depends on a number of input partitions.
 
-Real-time example:
+**Wide Transformation:**
 
-* Narrow: Filtering call records where call duration is greater than 100 seconds.
+Data processing requires moving data across partitions. This process is known as Shuffle.
 
-* Wide: Grouping call records by agent ID to calculate the total number of calls handled by each agent.
+**Examples:**
 
-Interview tip: Narrow transformations are generally faster because they avoid shuffle operations, whereas wide transformations can be expensive because they involve data movement across partitions.
+Narrow Transformations | Wide Transformations |
 
-We can continue with questions 28–30 in the same format, focusing on practical Databricks and PySpark interview concepts.
+|---|---|
 
+| filter() | groupBy() |
+
+| select() | distinct() |
+
+| map() | orderBy() |
+
+| flatMap() | repartition() |
+
+**Real-Time Example:**
+
+- Narrow: Filtering call records where call duration's more, than 100 seconds.
+
+- Wide: Grouping call records by agent_id to find the total number of calls handled by each agent.
+
+**Interview Tip:**
+
+Narrow transformations are usually faster because they avoid shuffle operations. Wide transformations can be costly because they involve moving data across partitions.
