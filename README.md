@@ -899,3 +899,65 @@ Narrow Transformations | Wide Transformations |
 **Interview Tip:**
 
 Narrow transformations are usually faster because they avoid shuffle operations. Wide transformations can be costly because they involve moving data across partitions.
+
+
+
+Here are 2 additional questions for your **Databricks and PySpark Interview Preparation** document, continuing from Q28.
+
+## **28. What is the difference between UNION() and UNION ALL() in PySpark?**
+
+**Definition:**
+
+Both are used to combine two DataFrames with the same structure.
+
+- **union():** Combines two DataFrames and keeps duplicate records.
+- **unionByName():** Combines DataFrames by matching column names instead of column positions.
+
+**Example:**
+
+```
+# Combine two DataFramesdf_combined = df1.union(df2)# Combine based on column namesdf_combined = df1.unionByName(df2)
+```
+
+**Explanation:**
+
+- union() matches columns based on their positions.
+- unionByName() matches columns based on their names.
+- Both preserve duplicate rows.
+
+**Interview Tip:** In PySpark, `union()` does not automatically remove duplicates. Use `distinct()` if you want to remove them.
+
+## **29. What is Schema Enforcement and Schema Evolution in Delta Lake?**
+
+**Definition:**
+
+Both concepts help maintain and manage the structure of data in Delta tables.
+
+- **Schema Enforcement:** Ensures incoming data matches the existing table schema. Incompatible data is rejected.
+- **Schema Evolution:** Allows supported changes to the existing schema, such as adding new columns.
+
+**Example:**
+
+Suppose an existing customer table contains:
+
+| customer_id | customer_name |
+| ----------- | ------------- |
+| 101         | Arun          |
+| 102         | Priya         |
+
+Now, incoming data contains an additional column called `email`.
+
+```
+df.write.format("delta") \    .mode("append") \    .option("mergeSchema", "true") \    .save("/delta/customer")
+```
+
+**Explanation:**
+
+- Schema Enforcement prevents unexpected schema changes.
+- Schema Evolution allows supported schema changes when enabled.
+
+**Real-Time Example:**
+
+When a source system introduces a new column, Schema Evolution can help add that column to an existing Delta table.
+
+These are useful additions for Data Engineer interviews, especially for PySpark and Delta Lake concepts.
