@@ -961,3 +961,37 @@ df.write.format("delta") \    .mode("append") \    .option("mergeSchema", "true"
 When a source system introduces a new column, Schema Evolution can help add that column to an existing Delta table.
 
 These are useful additions for Data Engineer interviews, especially for PySpark and Delta Lake concepts.
+
+Add this as **Question 30** to your document.
+
+## **30. What is the difference between&#x20;**`union()`**&#x20;and&#x20;**`join()`**&#x20;in PySpark?**
+
+**Definition:**
+
+Both are used to combine DataFrames, but they work differently.
+
+- **union():** Combines rows from two DataFrames with the same column structure.
+- **join():** Combines columns from two DataFrames based on a common column or condition.
+
+**Example:**
+
+```
+# Union: Combine rowsdf_combined = df1.union(df2)# Join: Combine columnsdf_result = df_calls.join(    df_agents,    "agent_id",    "inner")
+```
+
+**Difference:**
+
+| union()                     | join()                               |
+| --------------------------- | ------------------------------------ |
+| Combines rows               | Combines columns                     |
+| Requires compatible schemas | Requires a joining condition         |
+| Does not remove duplicates  | Matches records based on a condition |
+
+**Real-Time Example:**
+
+Suppose we receive customer call records from two different months.
+
+- `union()` combines January and February call records into one DataFrame.
+- `join()` combines call records with agent details using `agent_id`.
+
+**Interview Tip:** Remember: `union()` adds rows vertically, whereas `join()` combines related columns horizontally.
