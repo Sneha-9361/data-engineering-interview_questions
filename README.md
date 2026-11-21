@@ -995,3 +995,89 @@ Suppose we receive customer call records from two different months.
 - `join()` combines call records with agent details using `agent_id`.
 
 **Interview Tip:** Remember: `union()` adds rows vertically, whereas `join()` combines related columns horizontally.
+Add these two important beginner-level questions after Question 30. Both are commonly asked in Data Engineering interviews.
+
+### 31\. What is the difference between RDD and DataFrame in Apache Spark?
+
+Definition:
+
+RDD (Resilient Distributed Dataset) and DataFrame are two ways to process data in Apache Spark.
+
+* RDD: A distributed collection of data that allows us to process data using low-level operations.
+
+* DataFrame: A distributed collection of data organized into named columns, similar to a database table.
+
+Difference:
+
+| RDD                                      | DataFrame                             |
+| ---------------------------------------- | ------------------------------------- |
+| Works with low-level data structures     | Works with rows and columns           |
+| Does not have a predefined column schema | Has a defined schema                  |
+| Requires more manual optimization        | Spark automatically optimizes queries |
+| Less convenient for structured data      | Suitable for structured data          |
+
+Example:
+
+```python
+# Creating a DataFrame
+df = spark.createDataFrame(
+    [(101, "Arun"), (102, "Priya")],
+    ["id", "name"]
+)
+
+df.show()
+```
+
+Real-Time Example:
+
+Suppose we have customer call records.
+
+* Using RDD, we can process individual records using low-level operations.
+
+* Using DataFrame, we can easily filter, join and group customer call records.
+
+Interview Tip: DataFrames are generally preferred for structured data processing because they provide schema support and Spark SQL optimizations.
+
+### 32\. What is the difference between SQL and PySpark?
+
+Definition:
+
+SQL and PySpark are both used to process and analyze data, but they use different programming approaches.
+
+* SQL (Structured Query Language): A language used to retrieve, filter, join and analyze data.
+
+* PySpark: A Python API for Apache Spark used to process large datasets across multiple computers.
+
+Difference:
+
+| SQL                                                  | PySpark                                            |
+| ---------------------------------------------------- | -------------------------------------------------- |
+| Uses SQL queries                                     | Uses Python code                                   |
+| Easy for querying and analyzing data                 | Useful for complex data processing                 |
+| Commonly used for filtering, joining and aggregation | Supports transformations, machine learning and ETL |
+| Works with database tables and SQL engines           | Works with distributed DataFrames and Spark        |
+
+Example:
+
+SQL:
+
+```sql
+SELECT agent_id, COUNT(*)
+FROM customer_calls
+GROUP BY agent_id;
+```
+
+PySpark:
+
+```python
+df.groupBy("agent_id").count().show()
+```
+
+Real-Time Example:
+
+Suppose we have millions of customer call records.
+
+* Using SQL, we can calculate the total number of calls handled by each agent.
+
+* Using PySpark, we can perform the same calculation and also build complex data transformation pipelines.
+
