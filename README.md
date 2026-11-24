@@ -1075,11 +1075,5 @@ df.groupBy("agent_id").count().show()
 
 
 
-Real-Time Example:
 
-Suppose we have millions of customer call records.
-
-* Using SQL, we can calculate the total number of calls handled by each agent.
-
-* Using PySpark, we can perform the same calculation and also build complex data transformation pipelines.
 
