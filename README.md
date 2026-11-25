@@ -1069,10 +1069,8 @@ GROUP BY agent_id;
 
 PySpark:
 
-```python
+python
 df.groupBy("agent_id").count().show()
-```
-
 
 
 
